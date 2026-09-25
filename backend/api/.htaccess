@@ -1,0 +1,23 @@
+# Hand the Authorization header back to PHP. Apache running PHP as CGI/FastCGI
+# (Freehostia does) strips it, so admin writes come through unauthenticated and
+# the app reports "session expired". Wrapped in IfModule so a host without
+# mod_rewrite cannot 500 the whole folder. The app also sends the token in
+# X-Auth-Token, which works even where this rewrite is unavailable.
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+    RewriteCond %{HTTP:Authorization} .
+    RewriteRule .* - [E=HTTP_AUTHORIZATION:%{HTTP:Authorization}]
+</IfModule>
+
+# Never serve the include-only files as plain text if PHP is ever misconfigured.
+# (They are required by the endpoints; nobody should open them directly.)
+# Written for both Apache 2.2 and 2.4 so it cannot 500 the whole folder.
+<FilesMatch "^(config|auth|db|helpers)\.php$">
+    <IfModule mod_authz_core.c>
+        Require all denied
+    </IfModule>
+    <IfModule !mod_authz_core.c>
+        Order allow,deny
+        Deny from all
+    </IfModule>
+</FilesMatch>

@@ -1,0 +1,8 @@
+# Uploaded files are data, never code. Even if someone slips a .php past the
+# image check above, Apache must serve it as plain text rather than run it.
+php_flag engine off
+RemoveHandler .php .phtml .php3 .php4 .php5 .php7 .phps
+AddType text/plain .php .phtml .php3 .php4 .php5 .php7 .phps
+<IfModule mod_authz_core.c>
+    Require all granted
+</IfModule>
